@@ -1,0 +1,18 @@
+id,risk_model_id,name,lead
+1,1,Asignación de Capital
+2,2,Provisiones
+3,3,Actuarial
+4,3,Flujos y Modelos de Originación
+5,3,Provisiones
+6,3,Riesgo Corporativo
+7,3,Riesgo de Mercado de Capitales
+8,4,Banca Empresas Banco Agrícola
+9,4,Banca Empresas y Gobierno Bancolombia
+10,4,Banca Personas Banco Agrícola
+11,4,Banca Personas y Pymes Bancolombia
+12,4,Gerencia Provisiones Normas Internacionales
+13,5,Fiduciaria
+14,5,Liquidez
+15,5,Posición Propia
+16,5,Valores
+17,5,Riesgo Operacional Bancolombia
