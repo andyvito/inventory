@@ -72,9 +72,22 @@ module AreasByRisk
 			delete ':riskid' do
 				area = current_risk.area_models.find(params[:areaid])
 				area.destroy!
-				present :risk, area, :with => Entities::AreaModel
+				present :area, area, :with => Entities::AreaModel
 			end
 
+			desc "update an Area by Risk"
+			params do
+			  requires :riskid, type: String
+			  requires :areaid, type: String
+			  requires :name, type:String
+			  requires :lead, type:String
+			end
+			put ':riskid' do
+			  area = current_risk.area_models.find(params[:areaid])
+			  area.update({name:params[:name],lead:params[:lead]})
+			  present :area, area, :with => Entities::AreaModel
+			  
+			end
 
 
 			
