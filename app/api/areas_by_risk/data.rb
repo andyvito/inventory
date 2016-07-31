@@ -39,14 +39,43 @@ module AreasByRisk
 	    end
 
 		
-		resource :risk_data do
-			desc "List all Risks"
+		resource :areasByRisk do
+			desc "List all Areas By Risks"
+			params do
+			  requires :riskid, type: String
+			end
 			get do
 				areas = current_risk.area_models
 				present :riskid, params[:riskid]
+				present :name, current_risk[:name]
 				present :areas, areas, :with => Entities::AreaModel
-      			present :status, "Success"
 			end
+
+			desc "create a new Area by Risk"
+			params do
+			  requires :riskid, type: String
+			  requires :name, type: String
+			  requires :lead, type: String
+			end
+			post do
+			  current_risk.area_models.create!({name:params[:name], lead:params[:lead]})
+			  present :riskid, params[:riskid]
+			  present :name, current_risk[:name]
+			  present :new_area, RiskModel.find(params[:riskid]), :with => Entities::RiskModel
+			end
+
+			desc "delete an Area by Risk"
+			params do
+				requires :riskid, type: String
+				requires :areaid, type: String
+			end
+			delete ':riskid' do
+				area = current_risk.area_models.find(params[:areaid])
+				area.destroy!
+				present :risk, area, :with => Entities::AreaModel
+			end
+
+
 
 			
 		end

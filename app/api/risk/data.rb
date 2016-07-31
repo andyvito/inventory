@@ -1,20 +1,33 @@
+module JSendSuccessFormatter
+  def self.call object, env
+    { :status => 'success', :code => 200, :data => object }.to_json
+  end
+end
+
+module JSendErrorFormatter
+  def self.call message, backtrace, options, env
+    # This uses convention that a error! with a Hash param is a jsend "fail", otherwise we present an "error"
+    if message.is_a?(Hash)
+      { :status => 'fail', :data => message }.to_json
+    else
+      { :status => 'error', :message => message }.to_json
+    end
+  end
+end
+
+
 module Risk
 	class Data < Grape::API
 		format :json
 		rescue_from :all
 
-		error_formatter :json, lambda { |message,backtrace, options, env|
-			{
-				status: 'failed',
-				message: message,
-				error_code: 123 #TODO: remove hardcoded error code and put dynamic
-			}
-		}
+		formatter :json, JSendSuccessFormatter
+  		error_formatter :json, JSendErrorFormatter
 
 		resource :risk_model_data do
 			desc "List all Risks"
 			get do
-				RiskModel.all
+				present :risks, RiskModel.all, :with => Entities::RiskModel
 			end
 
 			desc "create a new Risk Model"
@@ -22,17 +35,15 @@ module Risk
 			  requires :name, type: String
 			end
 			post do
-			  RiskModel.create!({
-			    name:params[:name]
-			  })
+			  present :risk, RiskModel.create!({name:params[:name]}), :with => Entities::RiskModel
 			end
 
 			desc "delete an Risk Model"
 			params do
-				requires :id, type: String
+				requires :riskid, type: String
 			end
-			delete ':id' do
-				RiskModel.find(params[:id]).destroy!
+			delete ':riskid' do
+				present :risk, RiskModel.find(params[:riskid]).destroy!, :with => Entities::RiskModel
 			end
 
 			desc "update an Risk Model name"
@@ -41,9 +52,8 @@ module Risk
 			  requires :name, type:String
 			end
 			put ':id' do
-			  RiskModel.find(params[:id]).update({
-			    name:params[:name]
-			  })
+			  RiskModel.find(params[:id]).update({name:params[:name]})
+			  present :risk, RiskModel.find(params[:id]), :with => Entities::RiskModel
 			end
 		end
 	end

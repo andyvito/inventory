@@ -8,6 +8,7 @@ module AreasByRisk
     	class AreaModel < Grape::Entity
       		expose :id
       		expose :name
+          expose :lead
     	end
   	end
 end

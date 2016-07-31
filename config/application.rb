@@ -26,5 +26,14 @@ module Inventory
     ## Newly Added code to set up the api code
     config.paths.add File.join('app', 'api'), glob: File.join('**', '*.rb')
     config.autoload_paths += Dir[Rails.root.join('app', 'api', '*')]
+
+    config.middleware.insert_before 0, "Rack::Cors" do
+      allow do
+        origins '*'
+        #resource '*', :headers => :any, :methods => [:get, :post, :options]
+        resource '/api/*', :headers => :any, :methods => [:get, :post, :options, :put, :delete]
+      end
+    end
+
   end
 end
