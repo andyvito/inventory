@@ -58,10 +58,9 @@ module AreasByRisk
 			  requires :lead, type: String
 			end
 			post do
-			  current_risk.area_models.create!({name:params[:name], lead:params[:lead]})
 			  present :riskid, params[:riskid]
 			  present :name, current_risk[:name]
-			  present :new_area, RiskModel.find(params[:riskid]), :with => Entities::RiskModel
+			  present :new_area, current_risk.area_models.create!({name:params[:name], lead:params[:lead]}), :with => Entities::RiskModel
 			end
 
 			desc "delete an Area by Risk"

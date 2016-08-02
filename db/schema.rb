@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160727144444) do
+ActiveRecord::Schema.define(version: 20160801195419) do
 
   create_table "area_models", force: :cascade do |t|
     t.string   "name",          limit: 255
@@ -23,11 +23,40 @@ ActiveRecord::Schema.define(version: 20160727144444) do
 
   add_index "area_models", ["risk_model_id"], name: "fk_rails_388c24c299", using: :btree
 
-  create_table "kind_models", force: :cascade do |t|
-    t.string   "name",       limit: 255
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+  create_table "model_objects", force: :cascade do |t|
+    t.string   "code",            limit: 255
+    t.string   "name",            limit: 255
+    t.text     "description",     limit: 65535
+    t.string   "len",             limit: 255
+    t.string   "cat",             limit: 255
+    t.string   "kind",            limit: 255
+    t.integer  "frecuency",       limit: 4
+    t.text     "met_validation",  limit: 65535
+    t.float    "met_hours_man",   limit: 24
+    t.float    "qua_hours_man",   limit: 24
+    t.float    "cap_area",        limit: 24
+    t.float    "cap_qua",         limit: 24
+    t.float    "cap_total",       limit: 24
+    t.text     "comments",        limit: 65535
+    t.text     "more_info",       limit: 65535
+    t.boolean  "curriculum"
+    t.string   "documentation",   limit: 255
+    t.string   "version",         limit: 255
+    t.boolean  "is_qua"
+    t.text     "initial_dates",   limit: 65535
+    t.text     "original_author", limit: 65535
+    t.text     "final_dates",     limit: 65535
+    t.text     "final_author",    limit: 65535
+    t.boolean  "active"
+    t.boolean  "implementation"
+    t.integer  "risk_model_id",   limit: 4
+    t.integer  "area_model_id",   limit: 4
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
   end
+
+  add_index "model_objects", ["area_model_id"], name: "fk_rails_160d37d12e", using: :btree
+  add_index "model_objects", ["risk_model_id"], name: "fk_rails_fc94b16dc3", using: :btree
 
   create_table "risk_models", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -35,11 +64,7 @@ ActiveRecord::Schema.define(version: 20160727144444) do
     t.datetime "updated_at",             null: false
   end
 
-  create_table "type_models", force: :cascade do |t|
-    t.string   "name",       limit: 255
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
-  end
-
   add_foreign_key "area_models", "risk_models"
+  add_foreign_key "model_objects", "area_models"
+  add_foreign_key "model_objects", "risk_models"
 end
