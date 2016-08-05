@@ -1,5 +1,3 @@
-require "entities"
-
 module JSendSuccessFormatter
   def self.call object, env
     { :status => 'success', :code => 200, :data => object }.to_json

@@ -27,7 +27,7 @@ module Risk
 		resource :risk_model_data do
 			desc "List all Risks"
 			get do
-				present :risks, RiskModel.all, :with => Entities::RiskModel
+				present :risks, RiskModel.all, :with => RiskModel::Risk
 			end
 
 			desc "create a new Risk Model"
@@ -35,7 +35,7 @@ module Risk
 			  requires :name, type: String
 			end
 			post do
-			  present :risk, RiskModel.create!({name:params[:name]}), :with => Entities::RiskModel
+			  present :risk, RiskModel.create!({name:params[:name]}), :with => RiskModel::Risk
 			end
 
 			desc "delete an Risk Model"
@@ -43,7 +43,7 @@ module Risk
 				requires :riskid, type: String
 			end
 			delete ':riskid' do
-				present :risk, RiskModel.find(params[:riskid]).destroy!, :with => Entities::RiskModel
+				present :risk, RiskModel.find(params[:riskid]).destroy!, :with => RiskModel::Risk
 			end
 
 			desc "update an Risk Model name"
@@ -53,7 +53,7 @@ module Risk
 			end
 			put ':id' do
 			  RiskModel.find(params[:id]).update({name:params[:name]})
-			  present :risk, RiskModel.find(params[:id]), :with => Entities::RiskModel
+			  present :risk, RiskModel.find(params[:id]), :with => RiskModel::Risk
 			end
 		end
 	end

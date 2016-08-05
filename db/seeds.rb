@@ -27,3 +27,10 @@ CSV.foreach("#{Rails.root}/db/seed_data/models.csv", {encoding: "UTF-8", headers
 	recipe = ModelObject.find_by_id(row_h[:id]) || ModelObject.create(row.to_hash)
 	recipe.update(row_h)
 end
+
+puts 'backtest history'
+CSV.foreach("#{Rails.root}/db/seed_data/backtestsHistory.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
+	row_h = row.to_hash
+	recipe = BacktestHistoryModel.find_by_id(row_h[:id]) || BacktestHistoryModel.create(row.to_hash)
+	recipe.update(row_h)
+end

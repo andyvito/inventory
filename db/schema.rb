@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160801195419) do
+ActiveRecord::Schema.define(version: 20160805133011) do
 
   create_table "area_models", force: :cascade do |t|
     t.string   "name",          limit: 255
@@ -23,36 +23,53 @@ ActiveRecord::Schema.define(version: 20160801195419) do
 
   add_index "area_models", ["risk_model_id"], name: "fk_rails_388c24c299", using: :btree
 
-  create_table "model_objects", force: :cascade do |t|
-    t.string   "code",            limit: 255
-    t.string   "name",            limit: 255
-    t.text     "description",     limit: 65535
-    t.string   "len",             limit: 255
-    t.string   "cat",             limit: 255
-    t.string   "kind",            limit: 255
-    t.integer  "frecuency",       limit: 4
-    t.text     "met_validation",  limit: 65535
-    t.float    "met_hours_man",   limit: 24
-    t.float    "qua_hours_man",   limit: 24
-    t.float    "cap_area",        limit: 24
-    t.float    "cap_qua",         limit: 24
-    t.float    "cap_total",       limit: 24
-    t.text     "comments",        limit: 65535
-    t.text     "more_info",       limit: 65535
-    t.boolean  "curriculum"
-    t.string   "documentation",   limit: 255
-    t.string   "version",         limit: 255
-    t.boolean  "is_qua"
-    t.text     "initial_dates",   limit: 65535
-    t.text     "original_author", limit: 65535
-    t.text     "final_dates",     limit: 65535
-    t.text     "final_author",    limit: 65535
-    t.boolean  "active"
-    t.boolean  "implementation"
-    t.integer  "risk_model_id",   limit: 4
-    t.integer  "area_model_id",   limit: 4
+  create_table "backtest_history_models", force: :cascade do |t|
+    t.integer  "validate_year",   limit: 4
+    t.integer  "validate_month",  limit: 4
+    t.integer  "real_year",       limit: 4
+    t.integer  "real_month",      limit: 4
+    t.integer  "next_year",       limit: 4
+    t.integer  "next_month",      limit: 4
+    t.text     "comentaries",     limit: 65535
+    t.string   "result",          limit: 255
+    t.integer  "model_object_id", limit: 4
     t.datetime "created_at",                    null: false
     t.datetime "updated_at",                    null: false
+  end
+
+  add_index "backtest_history_models", ["model_object_id"], name: "fk_rails_1a4413d182", using: :btree
+
+  create_table "model_objects", force: :cascade do |t|
+    t.string   "code",                limit: 255
+    t.string   "name",                limit: 255
+    t.text     "description",         limit: 65535
+    t.string   "len",                 limit: 255
+    t.string   "cat",                 limit: 255
+    t.string   "kind",                limit: 255
+    t.integer  "frecuency",           limit: 4
+    t.text     "met_validation",      limit: 65535
+    t.float    "met_hours_man",       limit: 24
+    t.float    "qua_hours_man",       limit: 24
+    t.float    "cap_area",            limit: 24
+    t.float    "cap_qua",             limit: 24
+    t.float    "cap_total",           limit: 24
+    t.text     "comments",            limit: 65535
+    t.text     "more_info",           limit: 65535
+    t.boolean  "curriculum"
+    t.string   "documentation",       limit: 255
+    t.string   "version",             limit: 255
+    t.boolean  "is_qua"
+    t.text     "initial_dates",       limit: 65535
+    t.text     "original_author",     limit: 65535
+    t.text     "final_dates",         limit: 65535
+    t.text     "final_author",        limit: 65535
+    t.boolean  "active"
+    t.integer  "next_backtest_year",  limit: 4
+    t.integer  "next_backtest_month", limit: 4
+    t.integer  "risk_model_id",       limit: 4
+    t.integer  "area_model_id",       limit: 4
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
   end
 
   add_index "model_objects", ["area_model_id"], name: "fk_rails_160d37d12e", using: :btree
@@ -65,6 +82,7 @@ ActiveRecord::Schema.define(version: 20160801195419) do
   end
 
   add_foreign_key "area_models", "risk_models"
+  add_foreign_key "backtest_history_models", "model_objects"
   add_foreign_key "model_objects", "area_models"
   add_foreign_key "model_objects", "risk_models"
 end

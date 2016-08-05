@@ -1,5 +1,3 @@
-require "entities"
-
 module JSendSuccessFormatter
   def self.call object, env
     { :status => 'success', :code => 200, :data => object }.to_json
@@ -48,7 +46,7 @@ module AreasByRisk
 				areas = current_risk.area_models
 				present :riskid, params[:riskid]
 				present :name, current_risk[:name]
-				present :areas, areas, :with => Entities::AreaModel
+				present :areas, areas, :with => AreaModel::AreaLong
 			end
 
 			desc "create a new Area by Risk"
@@ -60,7 +58,7 @@ module AreasByRisk
 			post do
 			  present :riskid, params[:riskid]
 			  present :name, current_risk[:name]
-			  present :new_area, current_risk.area_models.create!({name:params[:name], lead:params[:lead]}), :with => Entities::RiskModel
+			  present :new_area, current_risk.area_models.create!({name:params[:name], lead:params[:lead]}), :with => RiskModel::Risk
 			end
 
 			desc "delete an Area by Risk"
@@ -71,7 +69,7 @@ module AreasByRisk
 			delete ':riskid' do
 				area = current_risk.area_models.find(params[:areaid])
 				area.destroy!
-				present :area, area, :with => Entities::AreaModel
+				present :area, area, :with => AreaModel::AreaLong
 			end
 
 			desc "update an Area by Risk"
@@ -84,7 +82,7 @@ module AreasByRisk
 			put ':riskid' do
 			  area = current_risk.area_models.find(params[:areaid])
 			  area.update({name:params[:name],lead:params[:lead]})
-			  present :area, area, :with => Entities::AreaModel
+			  present :area, area, :with => AreaModel::AreaLong
 			  
 			end
 

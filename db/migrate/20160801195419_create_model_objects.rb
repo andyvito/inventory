@@ -25,7 +25,8 @@ class CreateModelObjects < ActiveRecord::Migration
       t.text :final_dates
       t.text :final_author
       t.boolean :active
-      t.boolean :implementation
+      t.integer :next_backtest_year
+      t.integer :next_backtest_month
       t.references :risk_model, foreign_key: true
 	    t.references :area_model, foreign_key: true
       t.timestamps null: false
