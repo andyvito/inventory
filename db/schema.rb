@@ -30,8 +30,9 @@ ActiveRecord::Schema.define(version: 20160805133011) do
     t.integer  "real_month",      limit: 4
     t.integer  "next_year",       limit: 4
     t.integer  "next_month",      limit: 4
+    t.integer  "months_delayed",  limit: 4
     t.text     "comentaries",     limit: 65535
-    t.string   "result",          limit: 255
+    t.boolean  "result"
     t.integer  "model_object_id", limit: 4
     t.datetime "created_at",                    null: false
     t.datetime "updated_at",                    null: false

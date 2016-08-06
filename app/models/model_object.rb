@@ -42,8 +42,11 @@ class ModelObject < ActiveRecord::Base
 		expose :name
 		expose :len
 		expose :active
-      	expose :next_backtest_year
-      	expose :next_backtest_month
+      	expose :current_backtest do
+      		expose :next_backtest_year
+      		expose :next_backtest_month  
+      		expose :is_delayed    		
+      	end
 		expose :risk_model,:using => RiskModel::Risk, as: :risk
 		expose :area_model,:using => AreaModel::AreaShort, as: :area
 		expose :backtest_id, :if => Proc.new {|g| g.backtest_id.nil?}, as: :last_backtest
@@ -54,10 +57,20 @@ class ModelObject < ActiveRecord::Base
 			expose :real_month
 			expose :next_year
 			expose :next_month
+			expose :months_delayed
 			expose :comentaries
 			expose :result
       	end
-		
+
+      	def is_delayed
+      		year = object.next_backtest_year.blank? ? 0 : object.next_backtest_year
+      		month = object.next_backtest_month.blank? ? 0 : object.next_backtest_month
+      		delayed = 0
+      		if (year > 0 && month > 0)
+				delayed = (Date.current.year * 12 + Date.current.month) - (year * 12 + month)
+			end
+      		delayed > 0 ? delayed : nil
+      	end		
   	end
 
 

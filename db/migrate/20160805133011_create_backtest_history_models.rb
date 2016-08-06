@@ -7,8 +7,9 @@ class CreateBacktestHistoryModels < ActiveRecord::Migration
       t.integer :real_month
       t.integer :next_year
       t.integer :next_month
+      t.integer :months_delayed
       t.text :comentaries
-      t.string :result
+      t.boolean :result
       t.references :model_object, foreign_key: true
       t.timestamps null: false
     end
