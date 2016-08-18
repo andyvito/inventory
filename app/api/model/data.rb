@@ -41,7 +41,18 @@ module Model
             #.order('model_objects.id')
         present :models, m, :with => ModelObject::ModelShort
 			end
-
 		end
+
+    resource :model do
+      desc "Get Model By Id"
+      params do
+        requires :id, type: String
+      end
+      get do
+        present :model, ModelObject.find(params[:id]), :with => ModelObject::ModelLarge
+      end
+    end
+
+
 	end
 end

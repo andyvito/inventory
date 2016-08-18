@@ -57,7 +57,7 @@ ActiveRecord::Schema.define(version: 20160805133011) do
     t.text     "comments",            limit: 65535
     t.text     "more_info",           limit: 65535
     t.boolean  "curriculum"
-    t.string   "documentation",       limit: 255
+    t.string   "file_doc",            limit: 255
     t.string   "version",             limit: 255
     t.boolean  "is_qua"
     t.text     "initial_dates",       limit: 65535

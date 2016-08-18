@@ -5,4 +5,5 @@ class API < Grape::API
   mount AreasByRisk::Data
   mount ModelsByRisk::Data
   mount Model::Data
+  mount Type::Data
 end

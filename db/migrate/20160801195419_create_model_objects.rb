@@ -17,7 +17,7 @@ class CreateModelObjects < ActiveRecord::Migration
       t.text :comments
       t.text :more_info
       t.boolean :curriculum
-      t.string :documentation
+      t.string :file_doc
       t.string :version 
       t.boolean :is_qua
       t.text :initial_dates
