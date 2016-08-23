@@ -16,7 +16,7 @@ module JSendErrorFormatter
 end
 
 
-module Type
+module ModelsByRisk
 	class Data < Grape::API
 		format :json
 		rescue_from :all
@@ -24,11 +24,34 @@ module Type
 		formatter :json, JSendSuccessFormatter
   		error_formatter :json, JSendErrorFormatter
 
-		resource :type_distinct do
-			desc "List all distinct types"
-			get do
-				present :types, ModelObject.uniq.order('cat').where("cat IS NOT NULL").pluck(:cat)
+
+		helpers do
+	      def current_risk
+	        key = params[:riskid]
+	        @current_risk ||= RiskModel.find(key)
+	      end
+
+	      #def authenticate!
+	      #  error!({ "status" => "Fail", "error_message" => "Bad Key" }, 401) unless current_company
+	      #end
+	    end
+
+		
+		resource :modelsByRisk do
+			desc "List all Models By Risks"
+			params do
+			  requires :riskid, type: String
 			end
+			get do
+				models = current_risk.model_objects
+				present :riskid, params[:riskid]
+				present :models, models, :with => Entities::ModelObject
+			end
+
+
+
+
+			
 		end
 	end
 end
