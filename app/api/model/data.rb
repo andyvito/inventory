@@ -31,14 +31,9 @@ module Model
         #m = ModelObject.includes(:risk_model, :area_model).joins(:backtest_history_models).where("backtest_history_models.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = backtest_history_models.model_object_id)")
         m = ModelObject
             .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
-            .select('model_objects.id, model_objects.name, model_objects.len, model_objects.active, model_objects.next_backtest_year, model_objects.next_backtest_month, model_objects.risk_model_id, model_objects.area_model_id, last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed')
+            .select('model_objects.id, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed')
             .order('model_objects.id')
  
-            #m = ModelObject
-            #.joins("LEFT JOIN backtest_history_models ON backtest_history_models.model_object_id = model_objects.id")
-            #.where("backtest_history_models.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = backtest_history_models.model_object_id LIMIT 1)")
-            #.select('model_objects.id, model_objects.name, model_objects.len, model_objects.active, model_objects.next_backtest_year, model_objects.next_backtest_month, model_objects.risk_model_id, model_objects.area_model_id, backtest_history_models.validate_year, backtest_history_models.validate_month, backtest_history_models.real_year, backtest_history_models.real_month, backtest_history_models.next_year, backtest_history_models.next_month, backtest_history_models.comentaries, backtest_history_models.result')
-            #.order('model_objects.id')
         present :models, m, :with => ModelObject::ModelShort
 			end
 		end
@@ -56,33 +51,37 @@ module Model
       desc "update an model"
       params do
         requires :modelid, type: String
-
-        requires :code, type: String #
-        requires :name, type: String #
-        requires :description, type: String #
-        requires :len, type: String #
-        requires :cat, type: String #
-        requires :kind, type: String #
-        requires :frecuency, type: String#
-        requires :met_validation, type: String #
-        requires :met_hours_man, type: String #
-        requires :qua_hours_man, type: String #
+        requires :active, type: String #
+        requires :area_id, type: String # 
         requires :cap_area, type: String #
         requires :cap_qua, type: String #
         requires :cap_total, type: String #
-        requires :comments, type: String #
-        optional :more_info, type: String #
+        requires :cat, type: String #
+        requires :code, type: String #
         requires :curriculum, type: String #
+        requires :final_author, type: String #
+        optional :final_dates, type: String #
+        requires :frecuency, type: String#
+        optional :initial_dates, type: String #
+        requires :len, type: String #
+        requires :met_hours_man, type: String #
+        requires :met_validation, type: String #
+        requires :name, type: String #
+        requires :original_author, type: String #
+        requires :qua_hours_man, type: String #
+        requires :risk_id, type: String  #   
+        
+
+        requires :description, type: String #
+        requires :kind, type: String #
+        optional :comments, type: String #
+        optional :more_info, type: String #
         requires :file_doc, type: String #
-        requires :active, type: String #
         requires :is_qua, type: String #
         requires :version, type: String #
-        optional :initial_dates, type: String #
-        requires :original_author, type: String #
-        optional :final_dates, type: String #
-        requires :final_author, type: String #
-        requires :risk_id, type: String  #      
-        requires :area_id, type: String #        
+        
+           
+               
 
       end
       put ':modelid' do

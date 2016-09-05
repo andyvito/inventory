@@ -7,5 +7,5 @@ class API < Grape::API
   mount Model::Data
   mount Type::Data
   mount Kind::Data
-  
+  mount Backtest::Data
 end
