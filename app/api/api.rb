@@ -8,4 +8,5 @@ class API < Grape::API
   mount Type::Data
   mount Kind::Data
   mount Backtest::Data
+  mount Len::Data
 end

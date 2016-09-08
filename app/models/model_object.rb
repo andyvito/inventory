@@ -102,7 +102,6 @@ class ModelObject < ActiveRecord::Base
 			end
 			val_cur_month
       	end
-
   	end
 
 
