@@ -74,9 +74,6 @@ module Model
         #p 'XXXXXXXXXXXXXXXXXXXXXXXXXXXx'
         #p codeModel
 
-
-
-
         #the model always begins in active mode and implementation mode and version = 1
         newModel = ModelObject.create!({code:params[:code], name:params[:name], description:params[:description], len:params[:len],
                                              cat:params[:cat], kind:params[:kind], version:'1', initial_dates:params[:initial_dates],
@@ -93,9 +90,6 @@ module Model
             .order('model_objects.id')
 
         present :model, m, :with => ModelObject::ModelShort
-
-
-
       end
 
 
@@ -130,6 +124,39 @@ module Model
                       file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})
       end
     end
+
+
+    resource :model_frecuency do
+      desc "update an model's frecuency"
+      params do
+        requires :modelid, type: String #
+        requires :year_backtesting, type: String #
+        requires :month_backtesting, type: String #
+        requires :frecuency, type: String #
+        requires :met_validation, type: String #
+        requires :met_hours_man, type: String #
+        requires :qua_hours_man, type: String #
+        requires :comment, type: String #
+        requires :cap_area, type: String #
+        requires :cap_qua, type: String  #
+        requires :cap_total, type: String #
+      end
+      put ':modelid' do
+        model = ModelObject.find(params[:modelid])
+        model.update({frecuency:params[:frecuency], met_validation:params[:met_validation], met_hours_man:params[:met_hours_man],
+                      qua_hours_man:params[:qua_hours_man], cap_area:params[:cap_area], cap_qua:params[:cap_qua], 
+                      cap_total:params[:cap_total]})
+
+        #Devault values
+
+        present :newBacktesting, BacktestHistoryModel.create({real_year:Date.today.year, real_month: Date.today.month, 
+                                    next_year:params[:year_backtesting], next_month:params[:month_backtesting].to_i+1, 
+                                    comentaries:params[:comment], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
+
+      end
+    end
+
+
 
 
 	end

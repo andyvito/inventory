@@ -44,7 +44,7 @@ module Backtest
 
         #Calculate next dates backtesting
         next_month = next_month.to_i + frecuency.to_i
-        next_year = lastBacktest[:next_year].to_i
+        next_year = next_year.to_i
         if (next_month > 12) 
           next_month -= 12
           next_year += 1 
@@ -57,6 +57,7 @@ module Backtest
 
         months_delayed = (params[:yearResult] * 12 + params[:monthResult]) - (lastBacktest[:next_year] * 12 + lastBacktest[:next_month])
         months_delayed = months_delayed > 0 ? months_delayed : nil
+
         present :backtest, BacktestHistoryModel.create({validate_year: lastBacktest[:next_year], validate_month: lastBacktest[:next_month], 
                                     real_year: params[:yearResult], real_month: params[:monthResult], 
                                     next_year: next_year, next_month: next_month, 
