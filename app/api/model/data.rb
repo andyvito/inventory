@@ -129,17 +129,17 @@ module Model
     resource :model_frecuency do
       desc "update an model's frecuency"
       params do
-        requires :modelid, type: String #
-        requires :year_backtesting, type: String #
-        requires :month_backtesting, type: String #
-        requires :frecuency, type: String #
-        requires :met_validation, type: String #
-        requires :met_hours_man, type: String #
-        requires :qua_hours_man, type: String #
-        requires :comment, type: String #
-        requires :cap_area, type: String #
-        requires :cap_qua, type: String  #
-        requires :cap_total, type: String #
+        requires :modelid, type: String
+        requires :year_backtesting, type: String
+        requires :month_backtesting, type: String
+        requires :frecuency, type: String
+        requires :met_validation, type: String#
+        requires :met_hours_man, type: String
+        requires :qua_hours_man, type: String
+        requires :comment, type: String
+        requires :cap_area, type: String
+        requires :cap_qua, type: String
+        requires :cap_total, type: String
       end
       put ':modelid' do
         model = ModelObject.find(params[:modelid])
@@ -156,6 +156,25 @@ module Model
       end
     end
 
+
+    resource :model_clone do
+      desc "clone an model's"
+      params do
+        requires :modelid, type: String
+        requires :new_code, type: String
+        requires :new_name, type: String
+      end
+      post do
+        
+        model = ModelObject.find(params[:modelid]).dup
+        model.code = params[:new_code]
+        model.name = params[:new_name]
+        model.save
+
+        present :model, model, :with => ModelObject::ModelClone
+
+      end
+    end
 
 
 

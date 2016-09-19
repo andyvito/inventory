@@ -106,5 +106,10 @@ class ModelObject < ActiveRecord::Base
 
 
 
+  	class ModelClone < Grape::Entity
+		expose :id
+		expose :code
+		expose :name
+    end
 
 end
