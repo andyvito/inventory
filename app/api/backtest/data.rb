@@ -31,7 +31,7 @@ module Backtest
         requires :result, type: String 
         requires :yearResult, type: Integer
         requires :monthResult, type: Integer 
-        requires :comments, type: String        
+        optional :comments, type: String        
       end
       post do
         maxBacktesting = BacktestHistoryModel.where('model_object_id = ?', params[:modelid]).maximum('id')
@@ -42,18 +42,15 @@ module Backtest
         next_month = lastBacktest[:next_month].blank? ? Date.today.month : lastBacktest[:next_month]      
         next_year = lastBacktest[:next_year].blank? ? Date.today.year : lastBacktest[:next_year] 
 
-        #Calculate next dates backtesting
-        next_month = next_month.to_i + frecuency.to_i
-        next_year = next_year.to_i
-        if (next_month > 12) 
-          next_month -= 12
-          next_year += 1 
+        backtest_date = DateTime.parse(next_year.to_s+'-'+next_month.to_s+'-01')
+        backtest_date = backtest_date + frecuency.to_i.months
+
+        if (backtest_date < Date.today)
+          backtest_date = Date.today + frecuency.to_i.months
         end
 
-        if (next_year < Date.today.year && next_month < Date.today.month)
-          next_year = Date.today.year
-          next_month = Date.today.month
-        end
+        next_month = backtest_date.month
+        next_year = backtest_date.year
 
         months_delayed = (params[:yearResult] * 12 + params[:monthResult]) - (lastBacktest[:next_year] * 12 + lastBacktest[:next_month])
         months_delayed = months_delayed > 0 ? months_delayed : nil
@@ -63,6 +60,9 @@ module Backtest
                                     next_year: next_year, next_month: next_month, 
                                     months_delayed: months_delayed, comentaries: params[:comments],
                                     result: params[:result], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest 
+
+
+
 
       end
     end
