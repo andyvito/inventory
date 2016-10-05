@@ -57,6 +57,7 @@ class ModelObject < ActiveRecord::Base
 
 	class ModelShort < Grape::Entity
 		expose :id
+		expose :code
 		expose :name
 		expose :len
 		expose :active
