@@ -10,4 +10,5 @@ class API < Grape::API
   mount Backtest::Data
   mount Len::Data
   mount Report::Data
+  mount Config::Data
 end

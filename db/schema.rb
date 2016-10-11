@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160805133011) do
+ActiveRecord::Schema.define(version: 20161010182803) do
 
   create_table "area_models", force: :cascade do |t|
     t.string   "name",          limit: 255
@@ -39,6 +39,13 @@ ActiveRecord::Schema.define(version: 20160805133011) do
   end
 
   add_index "backtest_history_models", ["model_object_id"], name: "fk_rails_1a4413d182", using: :btree
+
+  create_table "configurations", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.string   "value",      limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
 
   create_table "model_objects", force: :cascade do |t|
     t.string   "code",                limit: 255
@@ -76,6 +83,27 @@ ActiveRecord::Schema.define(version: 20160805133011) do
   add_index "model_objects", ["area_model_id"], name: "fk_rails_160d37d12e", using: :btree
   add_index "model_objects", ["risk_model_id"], name: "fk_rails_fc94b16dc3", using: :btree
 
+  create_table "report_details_months", id: false, force: :cascade do |t|
+    t.integer  "report_month_id",           limit: 4, default: 0, null: false
+    t.integer  "backtest_history_model_id", limit: 4, default: 0, null: false
+    t.datetime "created_at",                                      null: false
+    t.datetime "updated_at",                                      null: false
+  end
+
+  add_index "report_details_months", ["backtest_history_model_id"], name: "fk_rails_ed1fe0c465", using: :btree
+
+  create_table "report_months", force: :cascade do |t|
+    t.integer  "year",                 limit: 4
+    t.integer  "month",                limit: 4
+    t.integer  "total_models",         limit: 4
+    t.integer  "total_unvalidated",    limit: 4
+    t.integer  "validated",            limit: 4
+    t.integer  "validated_fullfil",    limit: 4
+    t.integer  "validated_no_fullfil", limit: 4
+    t.datetime "created_at",                     null: false
+    t.datetime "updated_at",                     null: false
+  end
+
   create_table "risk_models", force: :cascade do |t|
     t.string   "name",       limit: 255
     t.datetime "created_at",             null: false
@@ -86,4 +114,6 @@ ActiveRecord::Schema.define(version: 20160805133011) do
   add_foreign_key "backtest_history_models", "model_objects"
   add_foreign_key "model_objects", "area_models"
   add_foreign_key "model_objects", "risk_models"
+  add_foreign_key "report_details_months", "backtest_history_models"
+  add_foreign_key "report_details_months", "report_months"
 end

@@ -1,5 +1,6 @@
 class BacktestHistoryModel < ActiveRecord::Base
 	belongs_to :model_object
+	belongs_to :report_details_month
 
 	class Backtest < Grape::Entity
 

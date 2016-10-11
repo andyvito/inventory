@@ -27,7 +27,6 @@ module Model
 		resource :models_data do
 			desc "List all Models"
 			get do
-				#present :models, ModelObject.includes(:risk_model, :area_model), :with => ModelObject::ModelShort
         m = ModelObject
             .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
             .select('model_objects.id, model_objects.code, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed')
@@ -118,10 +117,33 @@ module Model
       end
       put ':modelid' do
         model = ModelObject.find(params[:modelid])
+        temp_active = model.active
         model.update({code:params[:code], name:params[:name], description:params[:description], len:params[:len],  cat:params[:cat], kind:params[:kind], 
                       version:params[:version], initial_dates:params[:initial_dates],final_dates:params[:final_dates], original_author:params[:original_author], 
                       final_author:params[:final_author], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
                       file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})
+
+        #when a model pass inactive to active (or viceversa), the report month changes
+        if (temp_active != model.active)
+            m = ModelObject
+                .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
+                .select('model_objects.id, last.next_year, last.next_month')
+                .where('model_objects.code = ? AND model_objects.name = ? AND model_objects.id = ?',model.code,model.name,model.id)[0]
+
+            current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+            current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
+
+            if (DateTime.parse(m.next_year.to_s+'-'+m.next_month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))          
+              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
+              if (model.active == true) #is active
+                  report.total_models += 1
+              else
+                  report.total_models -= 1
+              end
+              report.save
+            end
+        end
       end
     end
 
@@ -147,12 +169,31 @@ module Model
                       qua_hours_man:params[:qua_hours_man], cap_area:params[:cap_area], cap_qua:params[:cap_qua], 
                       cap_total:params[:cap_total]})
 
-        #Devault values
+
+        m_old = ModelObject
+                .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
+                .select('model_objects.id, last.next_year, last.next_month')
+                .where('model_objects.code = ? AND model_objects.name = ? AND model_objects.id = ?',model.code,model.name,model.id)[0]
 
         present :newBacktesting, BacktestHistoryModel.create({real_year:Date.today.year, real_month: Date.today.month, 
                                     next_year:params[:year_backtesting], next_month:params[:month_backtesting].to_i+1, 
                                     comentaries:params[:comment], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
 
+
+        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+        #when the backtesting's next_year and next_month is equals to current year and month, the report month changes
+        if (DateTime.parse(params[:year_backtesting].to_s+'-'+(params[:month_backtesting].to_i + 1).to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
+              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
+              report.total_models += 1
+              report.save
+        end
+
+        if (DateTime.parse(m_old.next_year.to_s+'-'+m_old.next_month.to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
+              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
+              report.total_models -= 1
+              report.save
+        end
       end
     end
 

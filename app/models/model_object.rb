@@ -45,9 +45,12 @@ class ModelObject < ActiveRecord::Base
       	def is_delayed
       		year = object.next_backtest_year.blank? ? 0 : object.next_backtest_year
       		month = object.next_backtest_month.blank? ? 0 : object.next_backtest_month
+	        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+	        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
       		delayed = 0
       		if (year > 0 && month > 0)
-				delayed = (Date.current.year * 12 + Date.current.month) - (year * 12 + month)
+				delayed = (current_year * 12 + current_month) - (year * 12 + month)
 			end
       		delayed > 0 ? delayed : nil
       	end	
@@ -85,9 +88,12 @@ class ModelObject < ActiveRecord::Base
       	def is_delayed
       		year = object.next_year.blank? ? 0 : object.next_year
       		month = object.next_month.blank? ? 0 : object.next_month
+      		current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+	        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
       		delayed = 0
       		if (year > 0 && month > 0)
-				delayed = (Date.current.year * 12 + Date.current.month) - (year * 12 + month)
+				delayed = (current_year * 12 + current_month) - (year * 12 + month)
 			end
       		delayed > 0 ? delayed : nil
       	end	
@@ -96,8 +102,12 @@ class ModelObject < ActiveRecord::Base
       		val_cur_month = false
       		year = object.next_year.blank? ? 0 : object.next_year
       		month = object.next_month.blank? ? 0 : object.next_month
+
       		if (year > 0 && month > 0)
-				if (year <= Date.current.year && month <= Date.current.month)
+				current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+	        	current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
+				if (DateTime.parse(year.to_s+'-'+month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
 					val_cur_month = true					
 				end
 			end
