@@ -83,14 +83,17 @@ ActiveRecord::Schema.define(version: 20161010182803) do
   add_index "model_objects", ["area_model_id"], name: "fk_rails_160d37d12e", using: :btree
   add_index "model_objects", ["risk_model_id"], name: "fk_rails_fc94b16dc3", using: :btree
 
-  create_table "report_details_months", id: false, force: :cascade do |t|
-    t.integer  "report_month_id",           limit: 4, default: 0, null: false
-    t.integer  "backtest_history_model_id", limit: 4, default: 0, null: false
-    t.datetime "created_at",                                      null: false
-    t.datetime "updated_at",                                      null: false
+  create_table "report_details_months", force: :cascade do |t|
+    t.integer  "report_month_id",           limit: 4
+    t.integer  "model_object_id",           limit: 4
+    t.integer  "backtest_history_model_id", limit: 4
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
   end
 
   add_index "report_details_months", ["backtest_history_model_id"], name: "fk_rails_ed1fe0c465", using: :btree
+  add_index "report_details_months", ["model_object_id"], name: "fk_rails_f08f61df7c", using: :btree
+  add_index "report_details_months", ["report_month_id"], name: "fk_rails_c7bcd28035", using: :btree
 
   create_table "report_months", force: :cascade do |t|
     t.integer  "year",                 limit: 4
@@ -115,5 +118,6 @@ ActiveRecord::Schema.define(version: 20161010182803) do
   add_foreign_key "model_objects", "area_models"
   add_foreign_key "model_objects", "risk_models"
   add_foreign_key "report_details_months", "backtest_history_models"
+  add_foreign_key "report_details_months", "model_objects"
   add_foreign_key "report_details_months", "report_months"
 end

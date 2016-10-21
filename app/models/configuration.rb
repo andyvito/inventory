@@ -5,4 +5,10 @@ class Configuration < ActiveRecord::Base
 		expose :value
     end
 
+    class DateServer < Grape::Entity
+    	expose :year
+    	expose :month
+    	expose :date
+    end
+
 end

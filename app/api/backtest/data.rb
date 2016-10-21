@@ -87,13 +87,10 @@ module Backtest
         end
         report.save
 
-        report_details = ReportDetailsMonth.new
-        report_details.report_month_id = report.id
+
+        report_details = ReportDetailsMonth.where('report_month_id = ? AND model_object_id = ?', report.id, params[:modelid])[0]
         report_details.backtest_history_model_id = backtest_history.id
         report_details.save
-
-
-
 
 
       end

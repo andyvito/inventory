@@ -1,6 +1,7 @@
 class ModelObject < ActiveRecord::Base
 	belongs_to :area_model
 	belongs_to :risk_model
+	belongs_to :report_details_month
 	has_many :backtest_history_models, -> { order(id: :desc) }
 
 
@@ -45,8 +46,8 @@ class ModelObject < ActiveRecord::Base
       	def is_delayed
       		year = object.next_backtest_year.blank? ? 0 : object.next_backtest_year
       		month = object.next_backtest_month.blank? ? 0 : object.next_backtest_month
-	        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
-	        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+	       	current_year = options[:year]
+	        current_month = options[:month]
 
       		delayed = 0
       		if (year > 0 && month > 0)
@@ -88,8 +89,8 @@ class ModelObject < ActiveRecord::Base
       	def is_delayed
       		year = object.next_year.blank? ? 0 : object.next_year
       		month = object.next_month.blank? ? 0 : object.next_month
-      		current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
-	        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+	        current_year = options[:year]
+	        current_month = options[:month]
 
       		delayed = 0
       		if (year > 0 && month > 0)
@@ -104,8 +105,8 @@ class ModelObject < ActiveRecord::Base
       		month = object.next_month.blank? ? 0 : object.next_month
 
       		if (year > 0 && month > 0)
-				current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
-	        	current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+	        	current_year = options[:year]
+	        	current_month = options[:month]
 
 				if (DateTime.parse(year.to_s+'-'+month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
 					val_cur_month = true					

@@ -1,28 +1,14 @@
-module JSendSuccessFormatter
-  def self.call object, env
-    { :status => 'success', :code => 200, :data => object }.to_json
-  end
-end
-
-module JSendErrorFormatter
-  def self.call message, backtrace, options, env
-    # This uses convention that a error! with a Hash param is a jsend "fail", otherwise we present an "error"
-    if message.is_a?(Hash)
-      { :status => 'fail', :data => message }.to_json
-    else
-      { :status => 'error', :message => message }.to_json
-    end
-  end
-end
-
-
 module Model
 	class Data < Grape::API
+    helpers ApiHelpers::BacktestingHelper
+    helpers ApiHelpers::JSendSuccessFormatterHelper
+    helpers ApiHelpers::JSendErrorFormatterHelper
+    #before { test_function }
+
 		format :json
 		rescue_from :all
-
 		formatter :json, JSendSuccessFormatter
-  		error_formatter :json, JSendErrorFormatter
+  	error_formatter :json, JSendErrorFormatter
 
 		resource :models_data do
 			desc "List all Models"
@@ -32,7 +18,11 @@ module Model
             .select('model_objects.id, model_objects.code, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed')
             .order('model_objects.id')
  
-        present :models, m, :with => ModelObject::ModelShort
+
+        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
+        present :models, m, :with => ModelObject::ModelShort, year: current_year, month: current_month
 			end
 		end
 
@@ -42,7 +32,9 @@ module Model
         requires :id, type: String
       end
       get do
-        present :model, ModelObject.find(params[:id]), :with => ModelObject::ModelLarge
+        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+        present :model, ModelObject.find(params[:id]), :with => ModelObject::ModelLarge, year: current_year, month: current_month
       end
 
       desc "create a new Model"
@@ -88,7 +80,10 @@ module Model
             .where('model_objects.code = ? AND model_objects.name = ? AND model_objects.id = ?',newModel.code,newModel.name,newModel.id)
             .order('model_objects.id')
 
-        present :model, m, :with => ModelObject::ModelShort
+        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+
+        present :model, m, :with => ModelObject::ModelShort, year: current_year, month: current_month
       end
 
 
@@ -123,27 +118,8 @@ module Model
                       final_author:params[:final_author], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
                       file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})
 
-        #when a model pass inactive to active (or viceversa), the report month changes
-        if (temp_active != model.active)
-            m = ModelObject
-                .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
-                .select('model_objects.id, last.next_year, last.next_month')
-                .where('model_objects.code = ? AND model_objects.name = ? AND model_objects.id = ?',model.code,model.name,model.id)[0]
-
-            current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
-            current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
-
-
-            if (DateTime.parse(m.next_year.to_s+'-'+m.next_month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))          
-              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
-              if (model.active == true) #is active
-                  report.total_models += 1
-              else
-                  report.total_models -= 1
-              end
-              report.save
-            end
-        end
+        updateReportFromActive(temp_active, model.active, model.id)
+        
       end
     end
 
@@ -169,31 +145,13 @@ module Model
                       qua_hours_man:params[:qua_hours_man], cap_area:params[:cap_area], cap_qua:params[:cap_qua], 
                       cap_total:params[:cap_total]})
 
-
-        m_old = ModelObject
-                .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
-                .select('model_objects.id, last.next_year, last.next_month')
-                .where('model_objects.code = ? AND model_objects.name = ? AND model_objects.id = ?',model.code,model.name,model.id)[0]
+        m_old = ApiHelpers::BacktestingHelper.getLastBacktestByModelId(model.id)
 
         present :newBacktesting, BacktestHistoryModel.create({real_year:Date.today.year, real_month: Date.today.month, 
                                     next_year:params[:year_backtesting], next_month:params[:month_backtesting].to_i+1, 
                                     comentaries:params[:comment], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
 
-
-        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
-        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
-        #when the backtesting's next_year and next_month is equals to current year and month, the report month changes
-        if (DateTime.parse(params[:year_backtesting].to_s+'-'+(params[:month_backtesting].to_i + 1).to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
-              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
-              report.total_models += 1
-              report.save
-        end
-
-        if (DateTime.parse(m_old.next_year.to_s+'-'+m_old.next_month.to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
-              report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
-              report.total_models -= 1
-              report.save
-        end
+        updateReportFromFrecuency(params[:year_backtesting],params[:month_backtesting],m_old.next_year,m_old.next_month,model.id)
       end
     end
 

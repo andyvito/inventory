@@ -35,6 +35,16 @@ module Config
       end
     end
 
+    resource :get_current_date_backtesting do
+      desc "Get current month and year for backtesting"
+      get do
+        current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+        current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+        d = Date.new(current_year,current_month)
+        present :date, {'date':d, 'year':current_year, 'month':current_month}, :with => Configuration::DateServer 
+      end
+    end
+
 
     resource :close_month do
       desc "Close a Month"
@@ -63,6 +73,14 @@ module Config
           new_report_month.validated_fullfil = 0
           new_report_month.validated_no_fullfil = 0 
           new_report_month.save
+
+
+          m.each do |model|
+            new_report_detail = ReportDetailsMonth.new
+            new_report_detail.report_month_id = new_report.id
+            new_report_detail.save
+          end
+
         end
   
         present :current_date, Configuration.where('name in (?,?)', 'current_year','current_month'), :with => Configuration::Config
