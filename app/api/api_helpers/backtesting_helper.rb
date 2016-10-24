@@ -63,7 +63,7 @@ module ApiHelpers
       current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
 
       #when the backtesting's next_year and next_month is equals to current year and month, the report month changes
-      if (DateTime.parse(paramYear.to_s+'-'+(paramMonth.to_i + 1).to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
+      if (DateTime.parse(paramYear.to_s+'-'+paramMonth.to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
         incrementReportMonth(current_year, current_month, modelId)
       end
 

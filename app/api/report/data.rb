@@ -50,7 +50,7 @@ module Report
                     "INNER JOIN model_objects AS m ON d.model_object_id = m.id "+
                     "LEFT JOIN backtest_history_models AS b ON d.backtest_history_model_id = b.id "+
                     "INNER JOIN risk_models AS r ON m.risk_model_id = r.id INNER JOIN area_models AS a ON m.area_model_id = a.id "+
-                    "WHERE (rm.year = "+params[:year]+" AND rm.month = "+params[:month].to_s+")")
+                    "WHERE (rm.year = "+params[:year]+" AND rm.month = "+params[:month].to_s+") ORDER BY r.name, a.name, m.code, m.name")
 
           present :report_models, totalReportModels, :with => ReportMonth::ReportModels, year: params[:year], month: params[:month]
           

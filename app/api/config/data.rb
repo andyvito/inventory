@@ -49,11 +49,10 @@ module Config
     resource :close_month do
       desc "Close a Month"
       post do
-
-
         current_year = Configuration.where('name = ?', 'current_year')
         current_month = Configuration.where('name = ?', 'current_month')
-        if (current_year[0].value.to_i <= Date.today.year and current_month[0].value.to_i <= Date.today.month)
+        if (DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01') <= DateTime.parse(current_year[0].value.to_s+'-'+current_month[0].value.to_s+'-01'))
+          p 'ENTRA'
           new_date = DateTime.parse(current_year[0].value.to_s+'-'+current_month[0].value.to_s+'-01') + 1.months  
           current_year[0].value = new_date.year
           current_year[0].save
@@ -77,13 +76,14 @@ module Config
 
           m.each do |model|
             new_report_detail = ReportDetailsMonth.new
-            new_report_detail.report_month_id = new_report.id
+            new_report_detail.report_month_id = new_report_month.id
+            new_report_detail.model_object_id = model.id
             new_report_detail.save
           end
-
         end
-  
-        present :current_date, Configuration.where('name in (?,?)', 'current_year','current_month'), :with => Configuration::Config
+
+        d = Date.new(new_date.year,new_date.month)
+        present :date, {'date': d, 'year': new_date.year, 'month': new_date.month}, :with => Configuration::DateServer 
 
       end
     end

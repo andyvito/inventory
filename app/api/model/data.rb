@@ -148,7 +148,7 @@ module Model
         m_old = ApiHelpers::BacktestingHelper.getLastBacktestByModelId(model.id)
 
         present :newBacktesting, BacktestHistoryModel.create({real_year:Date.today.year, real_month: Date.today.month, 
-                                    next_year:params[:year_backtesting], next_month:params[:month_backtesting].to_i+1, 
+                                    next_year:params[:year_backtesting], next_month:params[:month_backtesting], 
                                     comentaries:params[:comment], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
 
         updateReportFromFrecuency(params[:year_backtesting],params[:month_backtesting],m_old.next_year,m_old.next_month,model.id)
