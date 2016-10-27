@@ -4,10 +4,9 @@ module ApiHelpers
     def self.getLastBacktestByModelId(modelId)
       m = ModelObject
           .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
-          .select('model_objects.id, last.next_year, last.next_month')
+          .select('model_objects.id, last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.months_delayed, last.comentaries, last.result')
           .where('model_objects.id = ?', modelId)[0]  
-
-      return m    
+      m    
     end
 
     def incrementReportMonth(current_year, current_month, modelId)
@@ -41,7 +40,6 @@ module ApiHelpers
       #don't have to update the report. Else, when a model pass inactive to active 
       #(or viceversa), the report changes|
       if (old_active != new_active)
-
         current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
         current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
         m = BacktestingHelper.getLastBacktestByModelId(modelId)
@@ -73,6 +71,28 @@ module ApiHelpers
     end
 
 
+
+    def updateReportFromChangeRisk(oldModelId, newModelId)
+      current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+      current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+      b = BacktestingHelper.getLastBacktestByModelId(oldModelId)
+      if (DateTime.parse(b.next_year.to_s+'-'+b.next_month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))   
+        decrementReportMonth(current_year, current_month, oldModelId)
+        incrementReportMonth(current_year, current_month, newModelId)
+      end
+    end
+
+
+
+    def getConsecutiveByRiskAndArea(riskId,areaId)
+      #we get an empty consecutive by risk and area or if there isn't any empty consecutive,
+      #then return the max consecutive
+      consecutive = ModelObject.where('name IS NULL AND risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).order('consecutive ASC').pluck('consecutive')[0]
+      if (consecutive.blank?)
+        consecutive = ModelObject.where('risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).maximum("consecutive").to_i + 1
+      end
+      consecutive
+    end
 
 
 

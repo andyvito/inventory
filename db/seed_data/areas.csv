@@ -1,18 +1,18 @@
-id,risk_model_id,name,lead
-1,1,Asignación de Capital,Fulano 1
-2,2,Provisiones,Fulano 2
-3,3,Actuarial,Fulano 3
-4,3,Flujos y Modelos de Originación, Fulano 4
-5,3,Provisiones, Fulano 5
-6,3,Riesgo Corporativo, Fulano 6
-7,3,Riesgo de Mercado de Capitales, Fulano 7
-8,4,Banca Empresas Banco Agrícola, Fulano 8
-9,4,Banca Empresas y Gobierno Bancolombia, Fulano 9
-10,4,Banca Personas Banco Agrícola, Fulano 10
-11,4,Banca Personas y Pymes Bancolombia, Fulano 11
-12,4,Gerencia Provisiones Normas Internacionales, Fulano 12
-13,5,Fiduciaria, Fulano 13
-14,5,Liquidez, Fulano 14
-15,5,Posición Propia, Fulano 15
-16,5,Valores, Fulano 16
-17,6,Riesgo Operacional Bancolombia, Fulano 17
+id,risk_model_id,name,lead,code
+1,1,Asignación de Capital,Fulano 1,AK
+2,2,Provisiones,Fulano 2,PRO
+3,3,Actuarial,Fulano 3,ACT
+4,3,Flujos y Modelos de Originación, Fulano 4,FMO
+5,3,Provisiones,Fulano 5,PRO
+6,3,Riesgo Corporativo, Fulano 6,RC
+7,3,Riesgo de Mercado de Capitales, Fulano 7,RMC
+8,4,Banca Empresas Banco Agrícola, Fulano 8,BEBA
+9,4,Banca Empresas y Gobierno Bancolombia, Fulano 9,BEGB
+10,4,Banca Personas Banco Agrícola, Fulano 10,BPBA
+11,4,Banca Personas y Pymes Bancolombia, Fulano 11,BPPB
+12,4,Gerencia Provisiones Normas Internacionales, Fulano 12,GPNI
+13,5,Fiduciaria, Fulano 13,FID
+14,5,Liquidez, Fulano 14,LIQ
+15,5,Posición Propia, Fulano 15,POPR
+16,5,Valores, Fulano 16,VAL
+17,6,Riesgo Operacional Bancolombia, Fulano 17,ROB

@@ -45,12 +45,12 @@ module Report
           
         if (DateTime.parse(params[:year].to_s+'-'+params[:month].to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
           
-          totalReportModels = ReportMonth.find_by_sql("SELECT r.name AS 'risk', m.code, m.name, a.name AS 'area', a.lead, m.is_qua, b.result "+
+          totalReportModels = ReportMonth.find_by_sql("SELECT r.code AS 'rCode', r.name AS 'risk', m.consecutive, m.name, a.code AS 'aCode', a.name AS 'area', a.lead, m.is_qua, b.result "+
                     "FROM report_months AS rm INNER JOIN report_details_months AS d ON rm.id = d.report_month_id "+
                     "INNER JOIN model_objects AS m ON d.model_object_id = m.id "+
                     "LEFT JOIN backtest_history_models AS b ON d.backtest_history_model_id = b.id "+
                     "INNER JOIN risk_models AS r ON m.risk_model_id = r.id INNER JOIN area_models AS a ON m.area_model_id = a.id "+
-                    "WHERE (rm.year = "+params[:year]+" AND rm.month = "+params[:month].to_s+") ORDER BY r.name, a.name, m.code, m.name")
+                    "WHERE (rm.year = "+params[:year]+" AND rm.month = "+params[:month].to_s+") ORDER BY r.name, a.name, m.consecutive, m.name")
 
           present :report_models, totalReportModels, :with => ReportMonth::ReportModels, year: params[:year], month: params[:month]
           

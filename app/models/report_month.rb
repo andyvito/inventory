@@ -95,7 +95,7 @@ class ReportMonth < ActiveRecord::Base
 
 
     class ReportModels < Grape::Entity
-    	expose :code
+    	expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s  }
     	expose :risk
     	expose :area
     	expose :lead

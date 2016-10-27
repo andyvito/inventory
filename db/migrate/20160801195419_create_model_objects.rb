@@ -1,7 +1,7 @@
 class CreateModelObjects < ActiveRecord::Migration
   def change
     create_table :model_objects do |t|
-      t.string :code
+      t.integer :consecutive
       t.string :name
       t.text :description
       t.string :len

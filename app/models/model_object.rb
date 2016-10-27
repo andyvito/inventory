@@ -7,30 +7,30 @@ class ModelObject < ActiveRecord::Base
 
   	class ModelLarge < Grape::Entity
 		expose :id
-		expose :code #
-		expose :name #
-		expose :description #
-		expose :len #
-		expose :cat #
-		expose :kind #
-		expose :frecuency#
-		expose :met_validation #
-		expose :met_hours_man #
-		expose :qua_hours_man #
-		expose :cap_area #
-		expose :cap_qua #
-		expose :cap_total #
-		expose :comments #
-		expose :more_info #
-		expose :curriculum #
+		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s  }
+		expose :name 
+		expose :description 
+		expose :len 
+		expose :cat 
+		expose :kind 
+		expose :frecuency
+		expose :met_validation
+		expose :met_hours_man 
+		expose :qua_hours_man 
+		expose :cap_area 
+		expose :cap_qua 
+		expose :cap_total 
+		expose :comments 
+		expose :more_info 
+		expose :curriculum 
 		expose :file_doc
 		expose :active
-		expose :is_qua #
-		expose :version  #
-		expose :initial_dates #
-		expose :original_author #
-		expose :final_dates #
-		expose :final_author #
+		expose :is_qua 
+		expose :version  
+		expose :initial_dates 
+		expose :original_author 
+		expose :final_dates 
+		expose :final_author 
 		
       	expose :current_backtest do
       		expose :next_backtest_year
@@ -61,7 +61,7 @@ class ModelObject < ActiveRecord::Base
 
 	class ModelShort < Grape::Entity
 		expose :id
-		expose :code
+		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s  }
 		expose :name
 		expose :len
 		expose :active
@@ -120,7 +120,7 @@ class ModelObject < ActiveRecord::Base
 
   	class ModelClone < Grape::Entity
 		expose :id
-		expose :code
+		expose(:code) { |m, options| options[:riskCode] + options[:areaCode] + m.consecutive.to_s  }
 		expose :name
     end
 

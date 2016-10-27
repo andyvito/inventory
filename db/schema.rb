@@ -14,6 +14,7 @@
 ActiveRecord::Schema.define(version: 20161010182803) do
 
   create_table "area_models", force: :cascade do |t|
+    t.string   "code",          limit: 255
     t.string   "name",          limit: 255
     t.string   "lead",          limit: 255
     t.integer  "risk_model_id", limit: 4
@@ -48,7 +49,7 @@ ActiveRecord::Schema.define(version: 20161010182803) do
   end
 
   create_table "model_objects", force: :cascade do |t|
-    t.string   "code",                limit: 255
+    t.integer  "consecutive",         limit: 4
     t.string   "name",                limit: 255
     t.text     "description",         limit: 65535
     t.string   "len",                 limit: 255
@@ -109,6 +110,7 @@ ActiveRecord::Schema.define(version: 20161010182803) do
 
   create_table "risk_models", force: :cascade do |t|
     t.string   "name",       limit: 255
+    t.string   "code",       limit: 255
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end

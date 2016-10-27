@@ -1,3 +1,4 @@
+
 module JSendSuccessFormatter
   def self.call object, env
     { :status => 'success', :code => 200, :data => object }.to_json
@@ -15,9 +16,10 @@ module JSendErrorFormatter
   end
 end
 
-
 module Risk
 	class Data < Grape::API
+		#helpers ApiHelpers::JSendSuccessFormatterHelper
+    	#helpers ApiHelpers::JSendErrorFormatterHelper
 		format :json
 		rescue_from :all
 
