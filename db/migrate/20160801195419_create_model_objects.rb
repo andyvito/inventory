@@ -18,15 +18,9 @@ class CreateModelObjects < ActiveRecord::Migration
       t.text :more_info
       t.boolean :curriculum
       t.string :file_doc
-      t.string :version 
+      t.integer :current_version 
       t.boolean :is_qua
-      t.text :initial_dates
-      t.text :original_author
-      t.text :final_dates
-      t.text :final_author
       t.boolean :active
-      t.integer :next_backtest_year
-      t.integer :next_backtest_month
       t.references :risk_model, foreign_key: true
 	    t.references :area_model, foreign_key: true
       t.timestamps null: false

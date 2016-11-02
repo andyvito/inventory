@@ -56,17 +56,19 @@ module ApiHelpers
 
 
 
-    def updateReportFromFrecuency(paramYear, paramMonth, oldYear, oldMonth, modelId)
+    def updateReportFromFrecuency(newDateBacktest, mBacktestOld, modelId)
       current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
       current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
 
       #when the backtesting's next_year and next_month is equals to current year and month, the report month changes
-      if (DateTime.parse(paramYear.to_s+'-'+paramMonth.to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
+      if (newDateBacktest == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
         incrementReportMonth(current_year, current_month, modelId)
       end
 
-      if (DateTime.parse(oldYear.to_s+'-'+oldMonth.to_s+'-01') == DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
-          decrementReportMonth(current_year, current_month, modelId)   
+      unless (mBacktestOld.nil?)
+        if (DateTime.parse(mBacktestOld.next_year.to_s+'-'+mBacktestOld.next_month.to_s+'-01') <= DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01'))
+            decrementReportMonth(current_year, current_month, modelId)   
+        end
       end
     end
 

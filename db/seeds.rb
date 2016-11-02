@@ -58,3 +58,10 @@ CSV.foreach("#{Rails.root}/db/seed_data/report_details_month.csv", {encoding: "U
 	recipe = ReportDetailsMonth.find_by_report_month_id_and_model_object_id(row_h[:report_month_id],row_h[:model_object_id]) || ReportDetailsMonth.create(row.to_hash)
 	recipe.update(row_h)
 end
+
+puts 'version'
+CSV.foreach("#{Rails.root}/db/seed_data/version.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
+	row_h = row.to_hash
+	recipe = ModelVersion.find_by_id(row_h[:id]) || ModelVersion.create(row.to_hash)
+	recipe.update(row_h)
+end

@@ -3,11 +3,12 @@ class ModelObject < ActiveRecord::Base
 	belongs_to :risk_model
 	belongs_to :report_details_month
 	has_many :backtest_history_models, -> { order(id: :desc) }
+	has_many :model_versions, -> { order(id: :desc) }
 
 
   	class ModelLarge < Grape::Entity
 		expose :id
-		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s  }
+		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s + '-' + m.current_version.to_s  }
 		expose :name 
 		expose :description 
 		expose :len 
@@ -26,17 +27,13 @@ class ModelObject < ActiveRecord::Base
 		expose :file_doc
 		expose :active
 		expose :is_qua 
-		expose :version  
-		expose :initial_dates 
-		expose :original_author 
-		expose :final_dates 
-		expose :final_author 
-		
-      	expose :current_backtest do
-      		expose :next_backtest_year
-      		expose :next_backtest_month  
-      		expose :is_delayed    		
-      	end
+		#expose :current_version, as: :version
+
+      	#expose :current_backtest do
+      		#expose :next_backtest_year
+      		#expose :next_backtest_month  
+      		#expose :is_delayed    		
+      	#end
 		expose :risk_model,:using => RiskModel::Risk, as: :risk #
 		expose :area_model,:using => AreaModel::AreaShort, as: :area #
 		expose :backtest_history_models,:using => BacktestHistoryModel::Backtest, as: :backtest_historial #
@@ -61,7 +58,7 @@ class ModelObject < ActiveRecord::Base
 
 	class ModelShort < Grape::Entity
 		expose :id
-		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s  }
+		expose(:code) { |m, options| m.rCode + m.aCode + m.consecutive.to_s + '-' + m.current_version.to_s  }
 		expose :name
 		expose :len
 		expose :active
@@ -120,7 +117,7 @@ class ModelObject < ActiveRecord::Base
 
   	class ModelClone < Grape::Entity
 		expose :id
-		expose(:code) { |m, options| options[:riskCode] + options[:areaCode] + m.consecutive.to_s  }
+		expose(:code) { |m, options| options[:riskCode] + options[:areaCode] + m.consecutive.to_s + '-' + m.current_version.to_s }
 		expose :name
     end
 

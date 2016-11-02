@@ -16,7 +16,7 @@ module Model
         m = ModelObject
             .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id "+
                   "INNER JOIN risk_models AS r ON model_objects.risk_model_id = r.id INNER JOIN area_models AS a ON model_objects.area_model_id = a.id")
-            .select("model_objects.id, model_objects.consecutive, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, r.code AS 'rCode', a.code AS 'aCode', " +
+            .select("model_objects.id, model_objects.consecutive, model_objects.current_version, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, r.code AS 'rCode', a.code AS 'aCode', " +
                     "last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed")
             .order('model_objects.id')
  
@@ -53,10 +53,6 @@ module Model
         requires :curriculum, type: String 
         requires :description, type: String 
         requires :file_doc, type: String 
-        optional :final_author, type: String 
-        optional :final_dates, type: String 
-        requires :initial_dates, type: String 
-        requires :original_author, type: String 
         requires :is_qua, type: String 
         requires :kind, type: String 
         requires :len, type: String  
@@ -68,21 +64,18 @@ module Model
 
         emptyModel = ModelObject.where('name IS NULL AND risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).order('id, consecutive ASC').pluck('id', 'consecutive')
         unless (emptyModel.blank?)
-          newModel = ModelObject.find(emptyModel[0][1])
+          newModel = ModelObject.find(emptyModel[0][0])
           newModel.update({name:params[:name], description:params[:description], len:params[:len], cat:params[:cat], kind:params[:kind], 
-                      version:params[:version], initial_dates:params[:initial_dates],final_dates:params[:final_dates], original_author:params[:original_author], 
-                      final_author:params[:final_author], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
-                      file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua]})          
+                      more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
+                      file_doc:params[:file_doc], active:1, is_qua:params[:is_qua]}) 
         else
           consecutive = ModelObject.where('risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).maximum("consecutive").to_i + 1
 
           #the model always begins in active mode and implementation mode and version = 1
           newModel = ModelObject.create({consecutive:consecutive, name:params[:name], description:params[:description], len:params[:len],
-                                               cat:params[:cat], kind:params[:kind], version:'1', initial_dates:params[:initial_dates],
-                                               final_dates:params[:final_dates], original_author:params[:original_author], final_author:params[:final_author], 
-                                               more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
-                                               file_doc:params[:file_doc], active:true, is_qua:params[:is_qua], 
-                                               risk_model_id:params[:risk_id], area_model_id:params[:area_id]})
+                                               cat:params[:cat], kind:params[:kind], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
+                                               file_doc:params[:file_doc], active:1, is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})
+
         end
 
         #TODO: Try make this without make the query. In another words, use the ModelObject::ModelShort (or another entity compatible with FE) without re-query  
@@ -90,7 +83,7 @@ module Model
         m = ModelObject
             .joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id "+
                   "INNER JOIN risk_models AS r ON model_objects.risk_model_id = r.id INNER JOIN area_models AS a ON model_objects.area_model_id = a.id")
-            .select("model_objects.id, model_objects.consecutive, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, r.code AS 'rCode', a.code AS 'aCode', " +
+            .select("model_objects.id, model_objects.consecutive, model_objects.current_version, model_objects.name, model_objects.len, model_objects.active, model_objects.risk_model_id, model_objects.area_model_id, r.code AS 'rCode', a.code AS 'aCode', " +
                     "last.validate_year, last.validate_month, last.real_year, last.real_month, last.next_year, last.next_month, last.comentaries, last.result, last.id AS backtest_id, last.months_delayed")
             .where('model_objects.consecutive = ? AND model_objects.id = ?',newModel.consecutive,newModel.id)
             .order('model_objects.id')
@@ -113,36 +106,44 @@ module Model
         requires :curriculum, type: String
         requires :description, type: String
         requires :file_doc, type: String
-        optional :final_author, type: String
-        optional :final_dates, type: String
-        requires :initial_dates, type: String
         requires :len, type: String
         requires :name, type: String 
-        requires :original_author, type: String
         requires :is_qua, type: String
         requires :kind, type: String
         optional :more_info, type: String
-        requires :version, type: String
-        requires :risk_id, type: String 
+        requires :risk_id, type: String         
       end
       put ':modelid' do
         model = ModelObject.find(params[:modelid])
         temp_active = model.active
 
-        if (model.risk_model_id.to_i != params[:risk_id].to_i || model.area_model_id.to_i != params[:area_id]) 
+        if (model.risk_model_id.to_i != params[:risk_id].to_i || model.area_model_id.to_i != params[:area_id].to_i) 
           emptyModel = ModelObject.where('name IS NULL AND risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).order('id, consecutive ASC').pluck('id', 'consecutive')
           unless (emptyModel.blank?)
-            consecutive = emptyModel[0][0]
-            modelClone = ModelObject.find(emptyModel[0][1])
+            consecutive = emptyModel[0][1]
+            modelClone = ModelObject.find(emptyModel[0][0])
+            modelClone.consecutive = consecutive
+            modelClone.name = params[:name]
+            modelClone.description = params[:description]
+            modelClone.len = params[:len]
+            modelClone.cat = params[:cat]
+            modelClone.kind = params[:kind]
+            modelClone.comments = params[:comments]
+            modelClone.more_info = params[:more_info]
+            modelClone.curriculum = params[:curriculum]
+            modelClone.file_doc = params[:file_doc]
+            modelClone.is_qua = params[:is_qua]
+            modelClone.active = params[:active]
+            modelClone.risk_model_id = params[:risk_id]
+            modelClone.area_model_id = params[:area_id]
+            modelClone.save
           else
             consecutive = ModelObject.where('risk_model_id = ? AND area_model_id = ?',params[:risk_id],params[:area_id]).maximum("consecutive").to_i + 1
             modelClone = model.dup
+            modelClone.update({consecutive:consecutive,name:params[:name], description:params[:description], len:params[:len], cat:params[:cat], kind:params[:kind], 
+                        more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
+                        file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})          
           end
-
-          modelClone.update({consecutive:consecutive,name:params[:name], description:params[:description], len:params[:len], cat:params[:cat], kind:params[:kind], 
-                      version:params[:version], initial_dates:params[:initial_dates],final_dates:params[:final_dates], original_author:params[:original_author], 
-                      final_author:params[:final_author], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
-                      file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua], risk_model_id:params[:risk_id], area_model_id:params[:area_id]})          
 
           if (modelClone.active == 1)
             updateReportFromChangeRisk(model.id, modelClone.id)
@@ -151,6 +152,10 @@ module Model
           backtest = BacktestHistoryModel.where('model_object_id = ?',params[:modelid])
           unless (backtest.blank?)
             backtest.update_all(model_object_id: modelClone.id.to_s)
+          end
+          version = ModelVersion.where('model_object_id = ?',params[:modelid])
+          unless (version.blank?)
+            version.update_all(model_object_id: modelClone.id.to_s)
           end
 
           lastBacktestByModelId = ApiHelpers::BacktestingHelper.getLastBacktestByModelId(modelClone.id)
@@ -172,22 +177,18 @@ module Model
           backtest.save
 
           model.update({name: nil, description: nil, len: nil, cat: nil, kind: nil, 
-                      version:nil, initial_dates:nil,final_dates:nil, original_author:nil, 
-                      final_author:nil, more_info:nil, comments:nil, curriculum:nil, file_doc:nil, active:nil, is_qua:nil,
+                      current_version:nil, more_info:nil, comments:nil, curriculum:nil, file_doc:nil, active:nil, is_qua:nil,
                       frecuency:nil, met_validation:nil, met_hours_man:nil, qua_hours_man:nil, cap_area:nil, cap_qua:nil, 
                       cap_total:nil}) 
           
           updateReportFromActive(temp_active, modelClone.active, modelClone.id)
         else
           model.update({name:params[:name], description:params[:description], len:params[:len], cat:params[:cat], kind:params[:kind], 
-                        version:params[:version], initial_dates:params[:initial_dates],final_dates:params[:final_dates], original_author:params[:original_author], 
-                        final_author:params[:final_author], more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
+                        more_info:params[:more_info], comments:params[:comments], curriculum:params[:curriculum], 
                         file_doc:params[:file_doc], active:params[:active], is_qua:params[:is_qua]})
          updateReportFromActive(temp_active, model.active, model.id)
         end
 
-
-        
       end
     end
 
@@ -196,8 +197,7 @@ module Model
       desc "update an model's frecuency"
       params do
         requires :modelid, type: String
-        requires :year_backtesting, type: String
-        requires :month_backtesting, type: String
+        requires :date_backtest, type: String
         requires :frecuency, type: String
         requires :met_validation, type: String#
         requires :met_hours_man, type: String
@@ -206,20 +206,39 @@ module Model
         requires :cap_area, type: String
         requires :cap_qua, type: String
         requires :cap_total, type: String
+        requires :author, type: String
+        requires :date_created, type: String
       end
       put ':modelid' do
-        model = ModelObject.find(params[:modelid])
-        model.update({frecuency:params[:frecuency], met_validation:params[:met_validation], met_hours_man:params[:met_hours_man],
-                      qua_hours_man:params[:qua_hours_man], cap_area:params[:cap_area], cap_qua:params[:cap_qua], 
-                      cap_total:params[:cap_total]})
 
-        m_old = ApiHelpers::BacktestingHelper.getLastBacktestByModelId(model.id)
+
+
+        date_backtest = Date.parse params[:date_backtest]
+        date_created = Date.parse params[:date_created]
+
+        model = ModelObject.find(params[:modelid])
+        curVersion = model.current_version.nil? ? 1 : model.current_version.to_i + 1
+        model.update({current_version:curVersion, frecuency:params[:frecuency], 
+                      met_validation:params[:met_validation], met_hours_man:params[:met_hours_man],
+                      qua_hours_man:params[:qua_hours_man], cap_area:params[:cap_area], cap_qua:params[:cap_qua], 
+                      cap_total:params[:cap_total]}){{}}
+
+
+        version = ModelVersion.new
+        version.version = curVersion
+        version.new_date = params[:date_created]
+        version.author = params[:author]
+        version.comments = params[:comment]
+        version.model_object_id = model.id
+        version.save
+
+        model_last_backtest = BacktestHistoryModel.where('model_object_id = ?',model.id).last
 
         present :newBacktesting, BacktestHistoryModel.create({real_year:Date.today.year, real_month: Date.today.month, 
-                                    next_year:params[:year_backtesting], next_month:params[:month_backtesting], 
-                                    comentaries:params[:comment], model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
+                                    next_year:date_backtest.year, next_month:date_backtest.month, 
+                                    model_object_id: params[:modelid]}), :with => BacktestHistoryModel::Backtest
 
-        updateReportFromFrecuency(params[:year_backtesting],params[:month_backtesting],m_old.next_year,m_old.next_month,model.id)
+        updateReportFromFrecuency(date_backtest, model_last_backtest, model.id)
       end
     end
 
@@ -229,6 +248,8 @@ module Model
       params do
         requires :modelid, type: String
         requires :new_name, type: String
+        requires :date, type: String
+        requires :author, type: String
       end
       post do
 
@@ -245,12 +266,7 @@ module Model
           new_model.more_info = model.more_info
           new_model.curriculum = model.curriculum
           new_model.file_doc = model.file_doc
-          new_model.version = model.version
           new_model.is_qua = model.is_qua
-          new_model.initial_dates = model.initial_dates
-          new_model.original_author = model.original_author
-          new_model.final_dates = model.final_dates
-          new_model.final_author = model.final_author
           new_model.active = model.active
           new_model.risk_model_id = model.risk_model_id
           new_model.area_model_id = model.area_model_id
@@ -266,7 +282,6 @@ module Model
           new_model.cap_qua = nil
           new_model.cap_total = nil
         end
-        
 
         new_model.name = params[:new_name]
         new_model.consecutive = consecutive.to_s
