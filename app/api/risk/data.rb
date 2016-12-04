@@ -1,4 +1,3 @@
-
 module JSendSuccessFormatter
   def self.call object, env
     { :status => 'success', :code => 200, :data => object }.to_json
@@ -34,10 +33,19 @@ module Risk
 
 			desc "create a new Risk Model"
 			params do
+			  requires :code, type: String
 			  requires :name, type: String
 			end
 			post do
-			  present :risk, RiskModel.create!({name:params[:name]}), :with => RiskModel::Risk
+				ActiveRecord::Base.transaction do
+          			begin 
+			  			present :risk, RiskModel.create!({code:params[:code],name:params[:name]}), :with => RiskModel::Risk
+			  		rescue Exception => e
+			            p e.message
+			            ActiveRecord::Rollback
+			            raise StandardError.new("error create a new risk")
+		          	end
+		        end
 			end
 
 			desc "delete an Risk Model"
@@ -45,7 +53,26 @@ module Risk
 				requires :riskid, type: String
 			end
 			delete ':riskid' do
-				present :risk, RiskModel.find(params[:riskid]).destroy!, :with => RiskModel::Risk
+				ActiveRecord::Base.transaction do
+          			begin
+						#Delete all models associated to this risk and ares
+						@models = ModelObject.find_by_risk_model_id(params[:riskid])
+						@areas = AreaModel.find_by_risk_model_id(params[:riskid]) 
+						unless @models.nil?
+							@models.destroy
+						end 
+
+						unless @areas.nil?
+							@areas.destroy
+						end
+						
+						present :risk, RiskModel.find_by_id(params[:riskid]).destroy!, :with => RiskModel::Risk
+			  		rescue Exception => e
+			            p e.message
+			            ActiveRecord::Rollback
+			            raise StandardError.new("error delete a risk")
+		          	end
+		        end
 			end
 
 			desc "update an Risk Model name"
@@ -54,9 +81,30 @@ module Risk
 			  requires :name, type:String
 			end
 			put ':id' do
-			  RiskModel.find(params[:id]).update({name:params[:name]})
-			  present :risk, RiskModel.find(params[:id]), :with => RiskModel::Risk
+				ActiveRecord::Base.transaction do
+          			begin				
+					  RiskModel.find(params[:id]).update({name:params[:name]})
+					  present :risk, RiskModel.find_by_id(params[:id]), :with => RiskModel::Risk
+			  		rescue Exception => e
+			            p e.message
+			            ActiveRecord::Rollback
+			            raise StandardError.new("error delete a risk")
+		          	end
+		        end
 			end
 		end
+
+
+
+		resource :risk_delete do
+			desc 'could a risk be deleted?.'
+			params do
+				requires :riskid, type: String
+			end
+			get do
+				present :risk, RiskModel.find_by_id(params[:riskid]), :with => RiskModel::RiskRemoved
+			end
+		end
+
 	end
 end

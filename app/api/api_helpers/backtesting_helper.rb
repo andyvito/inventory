@@ -22,14 +22,18 @@ module ApiHelpers
     end
 
     def decrementReportMonth(current_year, current_month, modelId)
-      report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
       rd = ReportDetailsMonth.where('report_month_id = ? AND model_object_id = ?', report.id, modelId)[0]
-      if (rd.backtest_history_model_id == nil)
-        report.total_models -= 1
-        report.total_unvalidated -= 1
-        rd.destroy
+
+      unless (rd.nil?)
+        unless (rd.backtest_history_model_id.nil?)
+          report = ReportMonth.where('year = ? AND month = ?', current_year, current_month)[0]
+          report.total_models -= 1
+          report.total_unvalidated -= 1
+          rd.destroy
+          report.save
+        end
       end
-      report.save
+
     end
 
 

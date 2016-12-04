@@ -12,4 +12,15 @@ class AreaModel < ActiveRecord::Base
 		expose :id
 		expose :name
 	end
+
+	class AreaRemoved < Grape::Entity
+		expose :id
+		expose :code
+		expose :name
+		expose :lead
+		expose (:totalModels) { |r, options|   AreaModel.find(r.id).model_objects.where('name IS NOT NULL').count}
+		expose (:delete) { |r, options|  AreaModel.find(r.id).model_objects.where('name IS NOT NULL').count == 0 ? true : false }
+	end
+
+
 end
