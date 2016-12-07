@@ -15,19 +15,19 @@ CSV.foreach("#{Rails.root}/db/seed_data/config.csv", {encoding: "UTF-8", headers
 	recipe.update(row_h)
 end
 
-#puts 'risks'
-#CSV.foreach("#{Rails.root}/db/seed_data/risks.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
-#	row_h = row.to_hash
-#	recipe = RiskModel.find_by_id(row_h[:id]) || RiskModel.create(row.to_hash)
-#	recipe.update(row_h)
-#end
+puts 'risks'
+CSV.foreach("#{Rails.root}/db/seed_data/risks.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
+	row_h = row.to_hash
+	recipe = RiskModel.find_by_id(row_h[:id]) || RiskModel.create(row.to_hash)
+	recipe.update(row_h)
+end
 
-#puts 'areas'
-#CSV.foreach("#{Rails.root}/db/seed_data/areas.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
-#	row_h = row.to_hash
-#	recipe = AreaModel.find_by_id(row_h[:id]) || AreaModel.create(row.to_hash)
-#	recipe.update(row_h)
-#end
+puts 'areas'
+CSV.foreach("#{Rails.root}/db/seed_data/areas.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
+	row_h = row.to_hash
+	recipe = AreaModel.find_by_id(row_h[:id]) || AreaModel.create(row.to_hash)
+	recipe.update(row_h)
+end
 
 #puts 'models'
 #CSV.foreach("#{Rails.root}/db/seed_data/models.csv", {encoding: "UTF-8", headers: true, header_converters: :symbol, converters: :all}) do |row|
