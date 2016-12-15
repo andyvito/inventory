@@ -22,7 +22,9 @@ module ApiHelpers
     end
 
     def decrementReportMonth(current_year, current_month, modelId)
-      rd = ReportDetailsMonth.where('report_month_id = ? AND model_object_id = ?', report.id, modelId)[0]
+      reportId = ReportMonth.where('year = ? AND month = ?', current_year, current_month).pluck('id')[0]
+      rd = ReportDetailsMonth.where('report_month_id = ? AND model_object_id = ?', reportId, modelId)[0]
+      p rd
 
       unless (rd.nil?)
         unless (rd.backtest_history_model_id.nil?)
