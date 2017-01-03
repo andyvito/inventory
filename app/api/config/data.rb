@@ -35,41 +35,38 @@ module Config
       post do
         ActiveRecord::Base.transaction do
           begin 
-            current_year = Configuration.where('name = ?', 'current_year')
-            current_month = Configuration.where('name = ?', 'current_month')
-            if (DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01') <= DateTime.parse(current_year[0].value.to_s+'-'+current_month[0].value.to_s+'-01'))
-              p 'ENTRA'
-              new_date = DateTime.parse(current_year[0].value.to_s+'-'+current_month[0].value.to_s+'-01') + 1.months  
-              current_year[0].value = new_date.year
-              current_year[0].save
-              current_month[0].value = new_date.month
-              current_month[0].save         
+            current_year = Configuration.where('name = ?', 'current_year')[0]
+            current_month = Configuration.where('name = ?', 'current_month')[0]
+            new_date = DateTime.parse(current_year.value.to_s+'-'+current_month.value.to_s+'-01') + 1.months 
 
-              #Create report and storage in report_month
-              new_report_month = ReportMonth.new
-              new_report_month.year = new_date.year
-              new_report_month.month = new_date.month
-              m = ModelObject.joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
-                             .where('STR_TO_DATE( CONCAT_WS(",", "01",last.next_month,last.next_year), "%d,%m,%Y") <= STR_TO_DATE( CONCAT_WS(",", "01",?,?), "%d,%m,%Y") AND model_objects.active = 1 AND last.next_month IS NOT NULL AND last.next_year IS NOT NULL',new_date.month,new_date.year)
+            current_year.value = new_date.year
+            current_year.save
+            current_month.value = new_date.month
+            current_month.save         
 
-              new_report_month.total_models = m.count
-              new_report_month.total_unvalidated = m.count
-              new_report_month.validated = 0
-              new_report_month.validated_fullfil = 0
-              new_report_month.validated_no_fullfil = 0 
-              new_report_month.save
+            #Create report and storage in report_month
+            new_report_month = ReportMonth.new
+            new_report_month.year = new_date.year
+            new_report_month.month = new_date.month
+            m = ModelObject.joins("LEFT JOIN backtest_history_models AS last ON last.id = (SELECT MAX(b.id) FROM backtest_history_models b GROUP BY b.model_object_id HAVING b.model_object_id = last.model_object_id) AND last.model_object_id = model_objects.id")
+                           .where('STR_TO_DATE( CONCAT_WS(",", "01",last.next_month,last.next_year), "%d,%m,%Y") <= STR_TO_DATE( CONCAT_WS(",", "01",?,?), "%d,%m,%Y") AND model_objects.active = 1 AND last.next_month IS NOT NULL AND last.next_year IS NOT NULL',new_date.month,new_date.year)
+
+            new_report_month.total_models = m.count
+            new_report_month.total_unvalidated = m.count
+            new_report_month.validated = 0
+            new_report_month.validated_fullfil = 0
+            new_report_month.validated_no_fullfil = 0 
+            new_report_month.save
 
 
-              m.each do |model|
-                new_report_detail = ReportDetailsMonth.new
-                new_report_detail.report_month_id = new_report_month.id
-                new_report_detail.model_object_id = model.id
-                new_report_detail.save
-              end
+            m.each do |model|
+              new_report_detail = ReportDetailsMonth.new
+              new_report_detail.report_month_id = new_report_month.id
+              new_report_detail.model_object_id = model.id
+              new_report_detail.save
             end
-
-            d = Date.new(new_date.year,new_date.month)
-            present :date, {'date': d, 'year': new_date.year, 'month': new_date.month}, :with => Configuration::DateServer 
+            
+            present :date, {'date': new_date, 'year': new_date.year, 'month': new_date.month}, :with => Configuration::DateServer 
           rescue Exception => e
             p e.message
             ActiveRecord::Rollback
