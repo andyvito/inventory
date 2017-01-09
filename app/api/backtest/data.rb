@@ -22,15 +22,19 @@ module Backtest
               lastBacktest = BacktestHistoryModel.where('model_object_id = ? AND id = ?', params[:modelid], maxBacktesting)[0]
               frecuency = ModelObject.where('id = ?',params[:modelid]).pluck(:frecuency)[0]
 
+              current_year = Configuration.where('name = ?', 'current_year').pluck('value')[0].to_i
+              current_month = Configuration.where('name = ?', 'current_month').pluck('value')[0].to_i
+              current_date = DateTime.parse(current_year.to_s+'-'+current_month.to_s+'-01')
+
               #Default values
-              next_month = lastBacktest[:next_month].blank? ? Date.today.month : lastBacktest[:next_month]      
-              next_year = lastBacktest[:next_year].blank? ? Date.today.year : lastBacktest[:next_year] 
+              next_month = lastBacktest[:next_month].blank? ? current_date.year : lastBacktest[:next_month]      
+              next_year = lastBacktest[:next_year].blank? ? current_date.year : lastBacktest[:next_year] 
 
               backtest_date = DateTime.parse(next_year.to_s+'-'+next_month.to_s+'-01')
               backtest_date = backtest_date + frecuency.to_i.months
 
-              if (backtest_date < Date.today)
-                backtest_date = Date.today + frecuency.to_i.months
+              if (backtest_date < current_date)
+                backtest_date = current_date + frecuency.to_i.months
               end
 
               next_month = backtest_date.month
@@ -45,7 +49,7 @@ module Backtest
               #if model's result backtesting doesn't accomplish, so the new state is CALIBRATE, so doesn't save new date of backtesting.
               commentaries = params[:comments].nil? ? '' : params[:comments]
 
-              if (params[:result].to_i == 0)
+              if (params[:result].to_i == 0 && frecuency != 1) 
                 commentaries = 'EN CALIBRACION. ' + commentaries
                 next_year = nil
                 next_month = nil
